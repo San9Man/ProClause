@@ -1,27 +1,41 @@
 def answer_query(query, persona, index, clauses):
-    
-    # Take top 3 clauses
+    if not clauses:
+        return {
+            "risk_level": "UNKNOWN",
+            "explanation": "No document uploaded.",
+            "obligations": [],
+            "recommendation": "Upload a document first."
+        }
+
+    # pick a few clauses
     relevant_clauses = clauses[:3]
+    context = " ".join(relevant_clauses).lower()
+    q = query.lower()
 
-    context = "\n".join(relevant_clauses)
+    risk_level = "LOW"
+    explanation = ""
+    obligations = []
+    recommendation = "Review carefully and negotiate safer terms if needed."
 
-    # 🧠 SMART RULE-BASED RESPONSE
-    answer = ""
+    # ---- simple intent + rule checks ----
+    if "terminate" in context or "evict" in q:
+        risk_level = "HIGH"
+        explanation += "The agreement allows termination without notice. "
+        recommendation = "Ask for notice period or protection before termination."
 
-    if "terminate" in context.lower() or "evict" in query.lower():
-        answer += "⚠️ Risk: The landlord may remove you without warning.\n\n"
+    if "payment" in context:
+        obligations.append("You must pay on time to avoid penalties.")
 
-    if "payment" in context.lower():
-        answer += "💰 Obligation: You must pay on time to avoid penalties.\n\n"
+    if "liability" in context:
+        risk_level = "HIGH"
+        obligations.append("You may be responsible for damages.")
 
-    if "liability" in context.lower():
-        answer += "⚠️ Risk: You may be responsible for damages.\n\n"
+    if not explanation:
+        explanation = "This clause defines responsibilities and rights between parties."
 
-    # Always include explanation
-    answer += "📄 Simple Explanation:\n"
-    answer += "This clause means the agreement gives one party strong control.\n\n"
-
-    answer += "💡 Recommendation:\n"
-    answer += "You should review this clause carefully and negotiate better terms if possible."
-
-    return answer
+    return {
+        "risk_level": risk_level,
+        "explanation": explanation.strip(),
+        "obligations": obligations,
+        "recommendation": recommendation
+    }

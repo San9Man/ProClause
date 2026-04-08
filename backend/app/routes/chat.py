@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fastapi import APIRouter, UploadFile, File
 from app.services.pdf_processor import extract_text_from_pdf
 from app.services.chunker import split_into_clauses
@@ -31,11 +32,16 @@ async def upload_pdf(file: UploadFile = File(...)):
     return {"message": "PDF processed successfully", "clauses": len(clauses)}
 
 
-@router.post("/ask")
-def ask(query: str, persona: str):
-    if global_clauses is None:
-       return {"error": "Upload a document first"}
-  
-    answer = answer_query(query, persona, global_index, global_clauses)
+class AskRequest(BaseModel):
+    query: str
+    persona: str = "Tenant"
 
-    return {"answer": answer}
+
+@router.post("/ask")
+def ask(request: AskRequest):
+    if global_clauses is None:
+        return {"error": "Upload a document first"}
+
+    result = answer_query(request.query, request.persona, global_index, global_clauses)
+
+    return result
