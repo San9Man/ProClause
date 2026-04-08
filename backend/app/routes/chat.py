@@ -34,8 +34,8 @@ async def upload_pdf(file: UploadFile = File(...)):
 @router.post("/ask")
 def ask(query: str, persona: str):
     if global_clauses is None:
-      return {"error": "Upload a document first"}
-
+       return {"error": "Upload a document first"}
+  
     answer = answer_query(query, persona, global_index, global_clauses)
 
     return {"answer": answer}

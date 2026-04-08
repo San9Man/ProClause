@@ -1,29 +1,27 @@
-from app.services.llm import call_llm
-
 def answer_query(query, persona, index, clauses):
     
-  
+    # Take top 3 clauses
     relevant_clauses = clauses[:3]
 
     context = "\n".join(relevant_clauses)
 
-    prompt = f"""
-You are a legal assistant.
+    # 🧠 SMART RULE-BASED RESPONSE
+    answer = ""
 
-User Persona: {persona}
+    if "terminate" in context.lower() or "evict" in query.lower():
+        answer += "⚠️ Risk: The landlord may remove you without warning.\n\n"
 
-Use ONLY the provided clauses to answer.
+    if "payment" in context.lower():
+        answer += "💰 Obligation: You must pay on time to avoid penalties.\n\n"
 
-Context:
-{context}
+    if "liability" in context.lower():
+        answer += "⚠️ Risk: You may be responsible for damages.\n\n"
 
-Question:
-{query}
+    # Always include explanation
+    answer += "📄 Simple Explanation:\n"
+    answer += "This clause means the agreement gives one party strong control.\n\n"
 
-Instructions:
-- Explain in simple English
-- Identify risks for the {persona}
-- Suggest actions
-"""
+    answer += "💡 Recommendation:\n"
+    answer += "You should review this clause carefully and negotiate better terms if possible."
 
-    return call_llm(prompt)
+    return answer
